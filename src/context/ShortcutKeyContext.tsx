@@ -1,31 +1,40 @@
 import { createContext, useEffect, useState, type ReactNode } from "react";
 import type { ShortcutContextTypes, ShortcutKey } from "../types/types";
 
-export const ShortcutKeyContext = createContext<ShortcutContextTypes | undefined>(
-  undefined
-);
+export const ShortcutKeyContext = createContext<
+  ShortcutContextTypes | undefined
+>(undefined);
 
 export const ShorcutKeyProvider = ({ children }: { children: ReactNode }) => {
   const [allShortcutKeys, setAllShortcutKeys] = useState<ShortcutKey[]>([]);
 
   const registerKey = (params: ShortcutKey) => {
     setAllShortcutKeys((prev) => {
-    const exists = prev.some(
-      (k) => k.keys.join("+") === params.keys.join("+")
-    );
-    if (exists) return prev;
+      const exists = prev.some(
+        (k) => k.keys.join("+") === params.keys.join("+")
+      );
+      if (exists) return prev;
 
-    return [...prev, params];
-  });
+      return [...prev, params];
+    });
   };
 
   const deregisterKey = (keys: string[]) => {
-     setAllShortcutKeys((prev) =>
+    const keyNotFound = allShortcutKeys.find(
+      (k) => k?.keys.join("+") === keys?.join("+")
+    );
+
+    if (!keyNotFound) {
+      alert(`Key not found: ${keys.join(" + ")}`);
+      return;
+    }
+
+    setAllShortcutKeys((prev) =>
       prev.filter((k) => k?.keys.join("+") !== keys?.join("+"))
     );
   };
 
-   useEffect(() => {
+  useEffect(() => {
     const handler = (event: KeyboardEvent) => {
       allShortcutKeys.forEach((shortcut) => {
         const keySet = shortcut.keys.map((k) => k.toUpperCase());

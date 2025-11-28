@@ -1,35 +1,78 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useShortcut } from "../hooks/useShortcut";
 
 const ExampleShortcut = () => {
-  const [items, setItems] = useState([
-    {
-      value: 1,
-    },
-    {
-      value: 2,
-    },
-    {
-      value: 3,
-    },
-  ]);
+  const [colors, setColors] = useState(["", "", ""]);
+  const { registerKey, deregisterKey, allShortcutKeys } = useShortcut();
 
-  const onRemove = (idx: number) => {
-    const updated = [...items];
-    delete updated[idx];
-    setItems(updated);
+  const handleChangeColor = (index: number, color: string) => {
+    const updated = [...colors];
+    updated[index] = color;
+    setColors(updated);
   };
+
+  useEffect(() => {
+    registerKey({
+      keys: ["ctrl", "a"],
+      description: "Change color to red",
+      action: () => handleChangeColor(0, "red"),
+    });
+
+    registerKey({
+      keys: ["ctrl", "b"],
+      description: "Change color to blue",
+      action: () => handleChangeColor(1, "blue"),
+    });
+
+    registerKey({
+      keys: ["ctrl", "c"],
+      description: "Change color to green",
+      action: () => handleChangeColor(2, "green"),
+    });
+  }, []);
 
   return (
     <div>
-      {items.map((item, idx) => (
-        <input
-          key={idx}
-          type="text"
-          value={item?.value}
-          onClick={() => onRemove(idx)}
-          onChange={(ev) => console.log(ev)}
-        />
-      ))}
+      <div style={{ display: "flex", gap: 10 }}>
+        {colors.map((color, idx) => (
+          <div
+            key={idx}
+            style={{
+              height: 200,
+              width: 200,
+              border: "1px solid",
+              backgroundColor: color,
+            }}
+          />
+        ))}
+      </div>
+
+      <div style={{ marginTop: 20 }}>
+        <p>Registered Shortcuts</p>
+        {allShortcutKeys?.map((shortcut, idx) => (
+          <div
+            key={idx}
+            style={{
+              marginBottom: 10,
+              display: "flex",
+              gap: 10,
+              alignItems: "center",
+            }}
+          >
+            <p>
+              {shortcut.keys.join(" + ")} - {shortcut?.description}
+            </p>
+            <button
+              style={{
+                height: "fit-content",
+              }}
+              onClick={() => deregisterKey(shortcut.keys)}
+            >
+              Deregester
+            </button>
+          </div>
+        ))}
+      </div>
     </div>
   );
 };
